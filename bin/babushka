@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'babushka'
+
+Object.send :include, Babushka::DSL
+
+# Handle ctrl-c gracefully during babushka runs.
+Babushka::Base.exit_on_interrupt!
+
+# Invoke babushka, returning the correct exit status to the shell.
+exit !!Babushka::Base.run
