@@ -8,5 +8,5 @@ Gem::Specification.new do |s|
   s.authors     = ["Ben Hoskings"]
   s.email       = 'ben@hoskings.net'
   s.files       = Dir["lib/**/*.rb"]
-  s.homepage    = "http://babushka.me'
+  s.homepage    = "http://babushka.me"
 end
