@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'babushka'
-  s.version     = '0.10.6pre4'
+  s.version     = '0.10.6'
   s.date        = '2011-11-13'
   s.summary     = "Test-driven sysadmin."
   s.description = "Babushka is a tool for finding, running, writing and sharing recipies to automate things."
