@@ -1,3 +1,12 @@
+# About this gem
+
+While using this gem, keep in mind:
+
+* by using this babushka as gem, it is not possible for babushka to configure ruby and rubygems 
+* switching the active rvm/rbenv ruby, or installing a new ruby that shadows the existing one, changes the set of gems that are in the path, which would make it look like babushka had disappeared.
+* lot of tools are confined to a single set of gems, or a single bundle. But babushka should exist outside of those things so it can configure them.
+* This is unstandard way to install babushka, standard way is explained at: http://babushka.me/installing
+
 # babushka: test-driven sysadmin.
 
 When you spend time researching something new, it's pretty easy to forget what you found, and have to re-research it again next time.
