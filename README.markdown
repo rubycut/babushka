@@ -6,6 +6,12 @@ While using this gem, keep in mind:
 * switching the active rvm/rbenv ruby, or installing a new ruby that shadows the existing one, changes the set of gems that are in the path, which would make it look like babushka had disappeared.
 * lot of tools are confined to a single set of gems, or a single bundle. But babushka should exist outside of those things so it can configure them.
 * This is unstandard way to install babushka, standard way is explained at: http://babushka.me/installing
+* This gem is built using https://github.com/rubycut/babushka, we try to follow main repo but can not guearantee that we will produce gem same day official babushka version comes out
+
+
+## Development status
+
+This gem is not ully tested
 
 # babushka: test-driven sysadmin.
 
