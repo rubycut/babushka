@@ -7,4 +7,4 @@ sources.yml
 coverage
 .yardoc
 *.gem
-doc/*
+doc
