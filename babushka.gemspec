@@ -7,6 +7,6 @@ Gem::Specification.new do |s|
   s.authors     = ["Ben Hoskings", "Rubycut"]
   s.email       = ['ben@hoskings.net', "ruby.cutter@gmail.com"]
   s.files       = Dir["lib/**/*.rb", "deps/**/*.rb", "LICENCE", "README.markdown", "spec/**/*", "Rakefile", "Gemfile", "Gemfile.lock"]
-  s.homepage    = "https://github.com/rubycut/babushka/tree/gem"
+  s.homepage    = "https://github.com/rubycut/dedushka"
   s.executables = "babushka" 
 end

@@ -1,4 +1,4 @@
-# About this gem
+# About this repo
 
 While using this gem, keep in mind:
 
