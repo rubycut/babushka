@@ -5,3 +5,6 @@ conf/rackspace.yml
 sources
 sources.yml
 coverage
+.yardoc
+*.gem
+doc/*
