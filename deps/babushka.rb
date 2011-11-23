@@ -73,7 +73,9 @@ dep 'in path.babushka', :from, :path do
     repo.path / '../bin'
   end
   setup {
-    unmeetable "The binary path alongside babushka, #{bin_path}, isn't in your $PATH." unless ENV['PATH'].split(':').include?(bin_path)
+    unless ENV['PATH'].split(':').map {|p| p.chomp('/') }.include?(bin_path)
+      unmeetable "The binary path alongside babushka, #{bin_path}, isn't in your $PATH."
+    end
   }
   met? { which 'babushka' }
   prepare {
@@ -86,7 +88,7 @@ dep 'in path.babushka', :from, :path do
 end
 
 dep 'installed.babushka', :from, :path do
-  from.default!("git://github.com/benhoskings/babushka.git")
+  from.default!("https://github.com/benhoskings/babushka.git")
 
   requires 'ruby', 'git'
   setup {

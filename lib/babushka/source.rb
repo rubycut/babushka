@@ -35,17 +35,17 @@ module Babushka
     end
 
     def self.default_remote_for name
-      "git://github.com/#{name}/babushka-deps.git"
+      "https://github.com/#{name}/babushka-deps.git"
     end
 
     require 'uri'
     def self.discover_uri_and_type path
       if path.nil?
         [nil, :implicit]
-      elsif path.to_s[/^(git|http|file):\/\//]
-        [path.to_s, :public]
-      elsif path.to_s[/^(\w+@)?[a-zA-Z0-9.\-]+:/]
+      elsif path.to_s.sub(/^\w+:\/\//, '')[/^[^\/]+[@:]/]
         [path.to_s, :private]
+      elsif path.to_s[/^(git|https?|file):\/\//]
+        [path.to_s, :public]
       else
         [path.p, :local]
       end
