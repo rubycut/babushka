@@ -23,67 +23,10 @@ A lot of the tech jobs we do manually aren't challenging or fun, but they're fin
 
 The idea is this: you take a job that you'd rather not do manually, and describe it to babushka using its DSL. The way it works, babushka not only knows how to accomplish each part of the job, it also knows how to check if each part is already done. You're teaching babushka to achieve an end goal with whatever runtime conditions you throw at it, not just to perform the task that would get you there from the very start.
 
-
-# installing
-
-Installing is really easy on supported systems (currently, OS X and Ubuntu). All it takes is one command, and it can be the first command you run on the machine. (Babushka will happily install on any machine though, not just new ones.)
-
-If you have curl (OS X):
-
-    bash -c "`curl babushka.me/up`"
-
-If you have wget (Ubuntu):
-
-    bash -c "`wget -O - babushka.me/up`"
-
-
-# kicking the tyres
-
-Once the install process has finished, you're ready to rock. If you have a Mac, maybe a good example is to install homebrew. To do that, we run the dependency (in babushka parlance, 'dep') called `homebrew`:
-
-    babushka homebrew
-
-Or check that your rubygems install is looking good - latest version + gem sources. This demonstrates how babushka works: it's the goal (rubygems set up well) that's important. You can safely run this whether rubygems is outdated, up to date, or missing, and babushka will work out what tasks need to be done in order to achieve the end goal. The `rubygems` dep handles that for us:
-
-    babushka rubygems
-
-Things like rubygems and homebrew aren't hard to install on their own, but with babushka it's _really_ easy, and _fast_. But more importantly, you know the job is being done just right, every time.
-
-OK, something more complex now---a full nginx/passenger stack.
-
-    babushka benhoskings:'webserver configured'
-
-Then you can set up each virtualhost with
-
-    babushka benhoskings:'vhost configured'
-
-That's how I set up all my production machines. If something isn't working, you have a list of things that aren't the culprit: everything in the output with a green √ beside it. Conversely, if babushka can detect the problem, the failing dep will have a red × beside it instead, which leads you straight to the cause of the problem. Test-driven sysadmin!
-
-
-# nothing up my sleeve…
-
-Creating and sharing this knowledge is central to babushka. It's all very well to run `babushka rubygems` and have it do a job for you, but the real power is in babushka's ability to automate whatever chore you want, not just ones that others have thought of already.
-
-To that end, I've tried really hard to make the process quick and satisfying. If you spend a little bit of time getting the feel for how to efficiently use babushka's DSL, you'll be cranking out deps just like the `rubygems` and `homebrew` ones above.
-
+Probably best place to start is {file:docs/deps.md Deps Guide}, it will teach you  what deps is, and how to write one.
 
 ## yeah, but how?
 
-A dep is one single piece of a larger task. A little nugget of code that does just one thing, and does it right. Here's a babushka dep, at its most generic.
-
-    dep 'name' do
-      requires 'other deps', 'whatever they might be'
-      met? {
-        # is this dependency already met?
-      }
-      meet {
-        # this code gets run if it isn't.
-      }
-    end
-
-The important bit here is that when you're writing a dep, you don't have to think about context at all, just the one little task it's doing in isolation. As long as your `requires` are correct, you can leave the overall structure to babushka and just write each little dep separately. When you run `babushka name`, babushka uses the `requires` in each dep to assemble a tree of deps and achieve the end goal you're after.
-
-The idea is to keep a clean separation between `met?` and `meet`: the code in `met?` should do nothing except just check whether the dep is met and return a boolean, and `meet` should unconditionally satisfy the dep without doing any checks.
 
 Right, here's one I prepared earlier. Given you're on a Mac with Xcode installed, this dep knows how to achieve the goal of having llvm available in the PATH.
 
@@ -206,7 +149,7 @@ If you want to write deps just for yourself that you don't plan to push online, 
 Finally, babushka also loads deps from `./babushka-deps` in the directory from which it was run. This is a good place for project-specific deps, because you can keep them within the project's source control.
 
 
-## n.b.
+## WARNING.
 
 A dep can run any code. Run deps of unknown origin at your own risk, and when choosing deps and dep sources, use the only real security there is: a network of trust.
 
