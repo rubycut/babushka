@@ -1,3 +1,9 @@
+## Reading documentation
+
+This file and other guides are written using yard, best place to read docs is:
+
+http://rubydoc.info/gems/rubycut-babushka/frames
+
 # About this repo
 
 While using this gem, keep in mind:
