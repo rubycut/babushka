@@ -40,6 +40,21 @@ As you can see, it will check mysql further only if necessary.
 
 ## Logging
 
-Logging is done nicely, you can use log_ok and similar methods to display messages during testing, and babushka will allgn them for you, see {Babushka::LogHelpers} for details.
-    
+Logging is done nicely, you can use {Babushka::LogHelpers#log_ok} and similar methods to display messages during testing, and babushka will allign them for you, see {Babushka::LogHelpers} for details.
+
+## Changing flow interactively
+
+You can ask user to confirm certain actions:
+
+    if Babushka::Prompt.confirm(%q{
+      I need to checkout stuff from git repo,
+      #{var(:home_dir)} exists, although not git repository,
+      can I delete #{var(:home_dir)}?"
+      }
+    )
+      var(:home_dir).p.remove
+    else
+      next unmet("Can't clean dir for git checkout")        
+    end
+
 

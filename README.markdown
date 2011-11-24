@@ -27,11 +27,13 @@ The idea is this: you take a job that you'd rather not do manually, and describe
 
 Probably best place to start is {file:docs/deps.md Deps Guide}, it will teach you  what deps is, and how to write one.
 
-If you want to use babushka to generate files based on templates, see {file:docs/templates.md Templating Guide} 
+If you want to use babushka to generate files based on templates, see {file:docs/templates.md Templating Guide}
+
+For installing packages see, {file:docs/packages.md Packages guide}
 
 ## Advanced
 
-{file:docs/meta_deps.md Deps Guide}
+{file:docs/meta_deps.md Meta Deps Guide}
 
 ## yeah, but how?
 
