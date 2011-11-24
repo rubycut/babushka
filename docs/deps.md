@@ -58,3 +58,23 @@ You can ask user to confirm certain actions:
     end
 
 
+## Structuring deps
+
+Right, here's one I prepared earlier. Given you're on a Mac with Xcode installed, this dep knows how to achieve the goal of having llvm available in the PATH.
+
+    dep 'llvm in path', :for => :snow_leopard do
+      requires 'xcode tools'
+      met? { which 'llvm-gcc-4.2' }
+      meet {
+        cd('/usr/local/bin') {|path|
+          shell "ln -s /Developer/usr/llvm-gcc-4.2/bin/llvm* .", :sudo => !path.writable?
+        }
+      }
+    end
+
+All the common logic is handled by babushka, which means that all the code in the dep is specific to the job at hand. The idea is maximising that signal-to-noise ratio: as much of the code in the dep above should be talking about llvm, not about other things that can be inferred elsewhere.
+
+Notice that there's no conditional or nested logic within the dep. That's by design: the more declarative things are, the more composable and re-interpretable they are later.
+
+If you find you're checking for the presence of some condition in your `meet` block, it probably means you're trying to do too much in a single dep, and you should be splitting it up into smaller ones. Remember, deps are small, self-contained and context-free - the more focused, the better.
+
