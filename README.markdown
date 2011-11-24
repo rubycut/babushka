@@ -23,124 +23,18 @@ A lot of the tech jobs we do manually aren't challenging or fun, but they're fin
 
 The idea is this: you take a job that you'd rather not do manually, and describe it to babushka using its DSL. The way it works, babushka not only knows how to accomplish each part of the job, it also knows how to check if each part is already done. You're teaching babushka to achieve an end goal with whatever runtime conditions you throw at it, not just to perform the task that would get you there from the very start.
 
-
-# installing
-
-Installing is really easy on supported systems (currently, OS X and Ubuntu). All it takes is one command, and it can be the first command you run on the machine. (Babushka will happily install on any machine though, not just new ones.)
-
-If you have curl (OS X):
-
-    bash -c "`curl babushka.me/up`"
-
-If you have wget (Ubuntu):
-
-    bash -c "`wget -O - babushka.me/up`"
+## Beginner
 
 
-# kicking the tyres
 
-Once the install process has finished, you're ready to rock. If you have a Mac, maybe a good example is to install homebrew. To do that, we run the dependency (in babushka parlance, 'dep') called `homebrew`:
+* {file:docs/deps.md Deps Guide} - Best place to start is it will teach you  what deps is, and how to write one.
+* {file:docs/templates.md Templating Guide} - generating (config) files files based on templates
+* {file:docs/packages.md Packages guide} - Babushka can help you install gem, deb, rpm and other packages
+* {file:docs/sources.md Sources Guide} - Where to save your deps and how to ditribute them
 
-    babushka homebrew
+## Advanced
 
-Or check that your rubygems install is looking good - latest version + gem sources. This demonstrates how babushka works: it's the goal (rubygems set up well) that's important. You can safely run this whether rubygems is outdated, up to date, or missing, and babushka will work out what tasks need to be done in order to achieve the end goal. The `rubygems` dep handles that for us:
-
-    babushka rubygems
-
-Things like rubygems and homebrew aren't hard to install on their own, but with babushka it's _really_ easy, and _fast_. But more importantly, you know the job is being done just right, every time.
-
-OK, something more complex now---a full nginx/passenger stack.
-
-    babushka benhoskings:'webserver configured'
-
-Then you can set up each virtualhost with
-
-    babushka benhoskings:'vhost configured'
-
-That's how I set up all my production machines. If something isn't working, you have a list of things that aren't the culprit: everything in the output with a green √ beside it. Conversely, if babushka can detect the problem, the failing dep will have a red × beside it instead, which leads you straight to the cause of the problem. Test-driven sysadmin!
-
-
-# nothing up my sleeve…
-
-Creating and sharing this knowledge is central to babushka. It's all very well to run `babushka rubygems` and have it do a job for you, but the real power is in babushka's ability to automate whatever chore you want, not just ones that others have thought of already.
-
-To that end, I've tried really hard to make the process quick and satisfying. If you spend a little bit of time getting the feel for how to efficiently use babushka's DSL, you'll be cranking out deps just like the `rubygems` and `homebrew` ones above.
-
-
-## yeah, but how?
-
-A dep is one single piece of a larger task. A little nugget of code that does just one thing, and does it right. Here's a babushka dep, at its most generic.
-
-    dep 'name' do
-      requires 'other deps', 'whatever they might be'
-      met? {
-        # is this dependency already met?
-      }
-      meet {
-        # this code gets run if it isn't.
-      }
-    end
-
-The important bit here is that when you're writing a dep, you don't have to think about context at all, just the one little task it's doing in isolation. As long as your `requires` are correct, you can leave the overall structure to babushka and just write each little dep separately. When you run `babushka name`, babushka uses the `requires` in each dep to assemble a tree of deps and achieve the end goal you're after.
-
-The idea is to keep a clean separation between `met?` and `meet`: the code in `met?` should do nothing except just check whether the dep is met and return a boolean, and `meet` should unconditionally satisfy the dep without doing any checks.
-
-Right, here's one I prepared earlier. Given you're on a Mac with Xcode installed, this dep knows how to achieve the goal of having llvm available in the PATH.
-
-    dep 'llvm in path', :for => :snow_leopard do
-      requires 'xcode tools'
-      met? { which 'llvm-gcc-4.2' }
-      meet {
-        cd('/usr/local/bin') {|path|
-          shell "ln -s /Developer/usr/llvm-gcc-4.2/bin/llvm* .", :sudo => !path.writable?
-        }
-      }
-    end
-
-All the common logic is handled by babushka, which means that all the code in the dep is specific to the job at hand. The idea is maximising that signal-to-noise ratio: as much of the code in the dep above should be talking about llvm, not about other things that can be inferred elsewhere.
-
-Notice that there's no conditional or nested logic within the dep. That's by design: the more declarative things are, the more composable and re-interpretable they are later.
-
-If you find you're checking for the presence of some condition in your `meet` block, it probably means you're trying to do too much in a single dep, and you should be splitting it up into smaller ones. Remember, deps are small, self-contained and context-free - the more focused, the better.
-
-
-## let's get declarative
-
-The basic dep, with just `requires`, `met?` and `meet`, is all you need to describe an end goal. But this generic nature of `met?` and `meet` means just as they're general purpose, they can lack focus. For example, installing an app using the system's package manager has a predictable `met?` block---check whether the package is present and its binaries are in the path.
-
-A lot of chores are variations on a theme like this, or just too cumbersome to do repeatedly at a low level. So babushka provides a way to write dep templates, or _meta deps_, that can be reused later. These meta deps allow you to focus the DSL, and make it even more concise.
-
-For example, Babushka ships with a meta dep that knows how to install TextMate bundles, given just the URL. All the actual logic, including the code for `met?` and `meet`, is wrapped up in the meta dep.
-
-    meta :tmbundle, :for => :osx do
-      accepts_list_for :source
-
-      template {
-        requires 'TextMate.app'
-        def path
-          '~/Library/Application Support/TextMate/Bundles' / name
-        end
-        met? { path.dir? }
-        before { shell "mkdir -p #{path.parent}" }
-        meet {
-          source.each {|uri|
-            git uri, :to => path
-          }
-        }
-        after { shell %Q{osascript -e 'tell app "TextMate" to reload bundles'} }
-      }
-    end
-
-Notice how the contents of the `template` block looks like a normal dep. That's cause it is---the meta dep is a factory, that takes values defined by `accepts_list_for` (in this case, `source`) and produces regular deps at runtime under the covers.
-
-Given the `tmbundle` meta dep, this dep handles the cucumber bundle:
-
-    dep 'Cucumber.tmbundle' do
-      source 'git://github.com/bmabey/cucumber-tmbundle.git'
-    end
-
-Notice there's no imperative code there at all---just declarations. That's what the DSL aims for. Instead of saying "do this, then do this, then do this", the code should say "here's a description of the problem, now you work it out." Also notice that there's no TextMate-specific logic. Adding this extra level of abstraction means all that's left are the specifics for _this_ TextMate bundle.
-
+* {file:docs/meta_deps.md Meta Deps Guide}
 
 # a runtime example
 
@@ -153,7 +47,7 @@ If you already have TextMate installed, babushka notices and just installs the b
         Found at /Applications/TextMate.app.
       } √ TextMate.app
       not already met.
-      Cloning from git://github.com/bmabey/cucumber-tmbundle.git... done.
+      Cloning from https://github.com/bmabey/cucumber-tmbundle.git... done.
       Cucumber.tmbundle met.
     } √ Cucumber.tmbundle
 
@@ -170,43 +64,13 @@ But if you don't have TextMate, that's an unmet dependency, so it gets pulled in
         TextMate.app met.
       } √ TextMate.app
       not already met.
-      Cloning from git://github.com/bmabey/cucumber-tmbundle.git... done.
+      Cloning from https://github.com/bmabey/cucumber-tmbundle.git... done.
       Cucumber.tmbundle met.
     } √ Cucumber.tmbundle
 
 
-## dep sources
 
-Babushka only contains the deps that it needs to know how to install itself, and set up a bare minimum of software like package managers, `ruby` and `git`. Everything else is stored separately, in _dep sources_. A dep source is a babushka-managed git repo that contains a bunch of ruby files.
-
-The organisation and naming of the files within the source is completely up to you - babushka will recursively load all the .rb files it can find in the source, in alphabetical order.
-
-You can define deps and templates in the same source, arranged however you like. You don't have to worry about having templates loaded before deps that are defined against them, because the load is a two-stage process that first reads every file and sets up the templates, and then defines all the deps that were found.
-
-The best way manage your own source is to make <tt>~/.babushka/deps</tt> a git repo, and push it to <tt>git://github.com/username/babushka-deps.git</tt>.
-
-To run deps from others' sources, you don't need to add the source explicitly. Just prefix the dep name with the correct username:
-
-    babushka freelancing-god:rvm
-
-The dep source will be cloned into <tt>~/.babushka/sources/freelancing-god</tt>, or updated if it's already there, and then babushka will search for a dep called "rvm" within that source. Because of this partitioning, you don't have to worry about naming conflicts with other people; everything is per-source.
-
-If you want to rename a source, or add one with a custom URL, you can add sources manually like this:
-
-    babushka sources -a custom-name git://example.com/custom/url.git
-
-That will make the source available in <tt>~/.babushka/sources/custom-name</tt>.
-
-There's no configuration file for dep sources; the only state is stored in the contents of <tt>~/.babushka/sources</tt>. Specifically, the source names are the directory names, and the URLs are the locations of the corresponding 'origin' git remotes.
-
-Because of this, you can safely add, remove, rename and edit the directories and repositories in there as much as you like---but importantly, *babushka assumes it has free run of <tt>~/.babushka/sources</tt>, and won't hesitate to `git reset --hard`. If you leave uncommitted or unpushed changes in a source, they'll be lost when that source is updated.*
-
-If you want to write deps just for yourself that you don't plan to push online, just drop them in <tt>~/.babushka/deps</tt>. If you'd rather keep them elsewhere, like in <tt>~/src</tt> or similar, you can symlink the directory into <tt>~/.babushka/deps</tt>.
-
-Finally, babushka also loads deps from `./babushka-deps` in the directory from which it was run. This is a good place for project-specific deps, because you can keep them within the project's source control.
-
-
-## n.b.
+## WARNING
 
 A dep can run any code. Run deps of unknown origin at your own risk, and when choosing deps and dep sources, use the only real security there is: a network of trust.
 
